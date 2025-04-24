@@ -14,7 +14,7 @@ const Projects = () => {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
         {/* Project Card */}
-        <div className="flex flex-col gap-3 bg-blue-950/30 p-6 rounded-md hover:animate-vibrate">
+        <div className="flex flex-col gap-3  p-6 rounded-md hover:animate-vibrate">
           <p className="text-2xl font-semibold text-white">
             YouTube + Twitter (Backend)
           </p>
