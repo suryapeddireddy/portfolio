@@ -7,7 +7,7 @@ const Loadingscreen = ({ isloaded, setisloaded }) => {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [isloaded]);
+  }, [setisloaded]); // ✅ added setisloaded here
 
   if (isloaded) return null;
 
