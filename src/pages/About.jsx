@@ -61,7 +61,6 @@ const About = () => {
         </div>
       </div>
       {/* Education + Experience */}
-      {/* Education + Experience */}
       <div className="flex flex-col md:flex-row gap-10 w-full max-w-4xl">
         {/* Education */}
         <div className="w-full md:w-1/2 p-4 rounded-md shadow-md hover:animate-vibrate">
@@ -96,7 +95,7 @@ const About = () => {
           </p>
         </div>
       </div>
-      <div className="w-full p-4 rounded-md shadow-md hover:animate-vibrate">
+      <div className="w-full p-4 rounded-md shadow-md hover:animate-vibrate max-w-4xl">
         <div className="text-3xl flex items-center gap-2 text-blue-400 mb-4">
           <FaRocket className="text-3xl" />
           <p>Extra Skills</p>
