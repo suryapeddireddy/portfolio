@@ -39,7 +39,40 @@ const Projects = () => {
 
           {/* View Project Link */}
           <a
-            href="https://your-project-link.com" // <-- Replace with your actual project link
+            href="https://github.com/suryapeddireddy/backend-assignments" // <-- Replace with your actual project link
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-blue-400 cursor-pointer mt-4 hover:underline"
+          >
+            View Project <FaLongArrowAltRight className="text-md" />
+          </a>
+        </div>
+        <div className="flex flex-col gap-3 p-6 rounded-md hover:animate-vibrate">
+          <p className="text-2xl font-semibold text-white">
+            Task Management App (Backend)
+          </p>
+          <p className="text-md text-gray-400 leading-relaxed">
+            A backend system for organizing and tracking tasks with automated
+            scheduling using NodeCron. Features include user management, task
+            creation, due-date handling, and periodic updates — built with
+            scalable backend technologies.
+          </p>
+
+          {/* Tech Stack */}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {["Node.js", "Express", "MongoDB"].map((tech, key) => (
+              <span
+                className="bg-blue-800 text-blue-300 px-3 py-1 text-sm font-medium"
+                key={key}
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+
+          {/* View Project Link */}
+          <a
+            href="https://github.com/suryapeddireddy/Backend-Projects/tree/main/taskmanagement/backend"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-blue-400 cursor-pointer mt-4 hover:underline"
