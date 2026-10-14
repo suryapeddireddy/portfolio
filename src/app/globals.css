@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #030712;
+    color: #f8fafc;
+  }
+}
+
+/* Subtle Command Deck Grid Pattern */
+.bg-command-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(30, 41, 59, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 59, 0.3) 1px, transparent 1px);
+}
+
+/* Zero-lag card glow effect */
+.deck-card {
+  background: #0b0f17;
+  border: 1px solid #1e293b;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.deck-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.15);
+}
