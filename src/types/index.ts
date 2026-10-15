@@ -45,3 +45,14 @@ export interface ProfileConfig {
     codeforces: string;
   };
 }
+
+export interface ExperienceItem {
+  id: string;
+  role: string;
+  organization: string;
+  location: string;
+  period: string;
+  type: 'Internship' | 'Full-Time' | 'Academic/Research';
+  highlights: string[];
+  tags: string[];
+}

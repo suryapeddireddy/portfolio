@@ -1,4 +1,4 @@
-import { ProfileConfig, Metric, Project } from '../types';
+import { ProfileConfig, Metric, Project, ExperienceItem } from '../types';
 
 export const profileConfig: ProfileConfig = {
   name: "P. Surya",
@@ -80,19 +80,34 @@ export const projects: Project[] = [
     githubUrl: "https://github.com",
     featured: true,
     date: "2025"
+  }
+];
+
+export const experiences: ExperienceItem[] = [
+  {
+    id: "unified-mentor-internship",
+    role: "Web Development Intern",
+    organization: "Unified Mentor Pvt Ltd",
+    location: "Gurgaon, India",
+    period: "06/2024 – 07/2024",
+    type: "Internship",
+    highlights: [
+      "Worked on backend workflow components for structured user data handling, validation, and persistence.",
+      "Assisted in organizing database schemas and server-side logic to support efficient request handling."
+    ],
+    tags: ["Backend Workflows", "Data Persistence", "Database Schemas", "Input Validation"]
   },
   {
-    id: "sccl-field-engineering",
-    title: "Underground Mining Operations Analysis",
-    tagline: "Field engineering study at Ravindrakhani No. 6 Incline underground coal operations",
-    category: "Geospatial & Operations",
-    tags: ["Field Engineering", "Operations", "Mechanized Workflows", "SCCL"],
-    summary: "Studied continuous miner setups, Board and Pillar face operations, and mechanized material handling workflows at SCCL.",
-    architectureDetails: {
-      problem: "Analyzing operational bottlenecks in underground continuous material transport systems.",
-      solution: "Evaluated daily underground extraction cycles, face haulage, and structural safety protocols.",
-    },
-    featured: false,
-    date: "2024"
+    id: "sccl-field-internship",
+    role: "Field Engineering Intern",
+    organization: "The Singareni Collieries Company Limited (SCCL)",
+    location: "Telangana, India",
+    period: "05/2024 – 06/2024",
+    type: "Internship",
+    highlights: [
+      "Completed field engineering study at Ravindrakhani No. 6 Incline underground coal operations.",
+      "Observed daily underground Board and Pillar face operations, continuous miner setups, and mechanized material handling workflows."
+    ],
+    tags: ["Underground Coal Operations", "Field Engineering", "Continuous Miner Setups", "Material Handling"]
   }
 ];
