@@ -1,4 +1,4 @@
-import { ProfileConfig, Metric, Project, ExperienceItem } from '../types';
+import type { ProfileConfig, Metric, Project, ExperienceItem, EducationItem } from '../types';
 
 export const profileConfig: ProfileConfig = {
   name: "P. Surya",
@@ -111,3 +111,51 @@ export const experiences: ExperienceItem[] = [
     tags: ["Underground Coal Operations", "Field Engineering", "Continuous Miner Setups", "Material Handling"]
   }
 ];
+export const educationData: EducationItem = {
+  institution: "Indian Institute of Technology (IIT) Kharagpur",
+  location: "West Bengal, India",
+  degree: "Bachelor of Technology (B.Tech): Mining Engineering",
+  period: "2020 – 2025",
+  cgpa: "7.04 / 10.00",
+  courseworkCategories: [
+    {
+      title: "Computational & Programming",
+      courses: [
+        "Programming and Data Structures (Theory & Lab)",
+        "Computational Methods and Mine Instrumentation",
+        "Mine Computation Laboratory",
+        "Engineering Drawing and Computer Graphics"
+      ]
+    },
+    {
+      title: "Mathematics & Quantitative Analysis",
+      courses: [
+        "Advanced Calculus",
+        "Linear Algebra, Numerical & Complex Analysis",
+        "Probability and Statistics",
+        "Quantitative Decision Making"
+      ]
+    },
+    {
+      title: "Core Engineering & Physical Sciences",
+      courses: [
+        "Basic Engineering Mechanics",
+        "Basic Electronics & Electronics Laboratory",
+        "Electrical Technology",
+        "Engineering Laboratory",
+        "Solid Mechanics",
+        "Physics of Waves & Physics Laboratory",
+        "Chemistry & Chemistry Laboratory"
+      ]
+    },
+    {
+      title: "Geology & Applied Geomechanics",
+      courses: [
+        "Geology for Engineers & Geology Laboratory",
+        "Rock Mechanics & Rock Mechanics Laboratory",
+        "Development of Mineral Deposits",
+        "Mine Surveying and Geoinformatics"
+      ]
+    }
+  ]
+};

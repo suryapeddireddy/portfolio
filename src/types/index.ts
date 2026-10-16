@@ -56,3 +56,15 @@ export interface ExperienceItem {
   highlights: string[];
   tags: string[];
 }
+
+export interface EducationItem {
+  institution: string;
+  location: string;
+  degree: string;
+  period: string;
+  cgpa: string;
+  courseworkCategories: {
+    title: string;
+    courses: string[];
+  }[];
+}
