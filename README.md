@@ -55,3 +55,8 @@ surya-portfolio/
 │   ├── data/                # Typed single source of truth (`portfolioData.ts`)
 │   └── types/               # TypeScript contracts (`index.ts`)
 └── README.md
+## Admin dashboard
+
+Open `/admin/login` and use the default passcode `surya-admin`. To customize it, set `NEXT_PUBLIC_ADMIN_PASSCODE` in `.env.local` before starting or building the application. Both the default and any public environment override are available in the browser bundle; this localStorage gate is a prototype, not server-enforced authentication.
+
+The dashboard edits the profile, projects, and competitive programming metrics. Save actions persist to `surya_portfolio_data_v1` in this browser and update the portfolio view on the same origin, including other open tabs. Profile and metrics drafts survive tab switching. Logout removes `surya_admin_auth` without deleting saved content. Changes do not modify the source data, publish globally, or sync across devices. Clearing browser storage restores the source defaults.

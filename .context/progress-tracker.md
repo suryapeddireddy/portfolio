@@ -1,12 +1,13 @@
 # Progress Tracker
 
 ## Current Phase
-- Phase 2: Hero Command Deck & Project Matrix
+- Phase 3: Browser-local Admin Dashboard
 
 ## Active Goal
-- Scaffold Hero Command Deck and Bento Project Matrix components using static context data.
+- Completed browser-local admin editing; production authentication and shared publishing remain future work.
 
 ## Completed
+- [x] Admin Dashboard (/admin): terminal-style passcode login, localStorage route gate and logout, profile/bio editor, project CRUD with delete confirmation, and metrics overrides. Browser-local edits persist and appear in HeroDeck and ProjectBento. Default passcode: `surya-admin`; optional build-time `NEXT_PUBLIC_ADMIN_PASSCODE` override. Client-side gate only, with no server authentication or shared CMS database.
 - [x] Completed `EducationDeck.tsx` with the numbered education header, IIT Kharagpur highlight card, degree/location/period/CGPA details, and responsive four-category coursework matrix; rendered directly below `Timeline`. Preserved the existing exported `EducationItem` and `educationData`, and made data model imports type-only.
 - [x] Completed `Timeline.tsx` with a vertical experience timeline, deck-card surfaces, role and organization headings, period badges, locations, highlights, and domain tags; rendered below `ProjectBento` on the root page.
 - [x] Completed `ProjectBento.tsx` with cyan category filter pills, date/category badges, titles, taglines, summaries, tech pills, system specification buttons, GitHub icons, and empty states.
@@ -20,9 +21,9 @@
 - [x] Created root `.context/` agent system documentation
 
 ## In Progress
-- Validation: `npx tsc --noEmit`, `npm run lint`, and `npm run build` passed on 2026-10-16 after the education deck implementation. Browser visual checks have not been run.
+- Validation: `npx tsc --noEmit`, `npm run lint`, and `npm run build` passed on 2026-10-17. Storage behavior checks passed for auth/logout, profile and metric persistence, project add/delete, malformed data recovery, and blocked storage. HTTP smoke checks passed for `/`, `/admin`, and `/admin/login`; browser interaction and visual checks have not been run.
 - [x] `src/components/HeroDeck.tsx` execution pass
 - [x] Root page assembly (`src/app/page.tsx`)
 
 ## Next Up
-- Setup password-protected `/admin` CMS dashboard.
+- Add server authentication and a shared data store if the CMS needs production publishing across devices.

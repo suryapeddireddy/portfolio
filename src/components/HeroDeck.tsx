@@ -1,6 +1,9 @@
-import { metrics, profileConfig } from "../data/portfolioData";
+"use client";
+
+import { usePortfolioContent } from "../lib/portfolio-store";
 
 export default function HeroDeck() {
+  const { profile: profileConfig, metrics } = usePortfolioContent();
   return (
     <section aria-labelledby="hero-title" className="space-y-6 py-12">
       <p className="font-mono text-sm text-emerald-400">{profileConfig.statusBadge}</p>

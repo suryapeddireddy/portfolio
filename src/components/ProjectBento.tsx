@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { projects } from "../data/portfolioData";
+import { usePortfolioContent } from "../lib/portfolio-store";
 import type { Category, Project } from "../types";
 import ProjectDrawer from "./ProjectDrawer";
 
@@ -16,6 +16,7 @@ function Github({ size = 18 }: { size?: number }) {
 }
 
 export default function ProjectBento() {
+  const { projects } = usePortfolioContent();
   const [category, setCategory] = useState<Category>("All");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const visibleProjects = projects.filter((project) => category === "All" || project.category === category);
