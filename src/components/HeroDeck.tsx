@@ -1,5 +1,6 @@
 "use client";
 
+import { Download, FileText } from "lucide-react";
 import { usePortfolioContent } from "../lib/portfolio-store";
 
 export default function HeroDeck() {
@@ -12,6 +13,27 @@ export default function HeroDeck() {
       <p className="max-w-3xl text-xl text-cyan-300">{profileConfig.title}</p>
       <div className="max-w-3xl space-y-3 text-slate-400">
         {profileConfig.bioParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+      </div>
+      <div className="flex flex-wrap gap-3">
+        <a
+          href="/scientific_computing_CV.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View Resume (PDF) (opens in a new tab)"
+          className="deck-card inline-flex items-center gap-2 rounded-xl px-5 py-3 font-mono text-sm font-semibold text-cyan-300 hover:text-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
+        >
+          <FileText size={18} aria-hidden="true" />
+          [ View Resume (PDF) ]
+        </a>
+        <a
+          href="/scientific_computing_CV.pdf"
+          download="scientific_computing_CV.pdf"
+          aria-label="Download CV (PDF)"
+          className="deck-card inline-flex items-center gap-2 rounded-xl px-5 py-3 font-mono text-sm font-semibold text-emerald-300 hover:border-emerald-500/40 hover:text-emerald-100 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+        >
+          <Download size={18} aria-hidden="true" />
+          [ Download CV ]
+        </a>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {metrics.map((metric) => (

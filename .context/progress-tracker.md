@@ -7,6 +7,9 @@
 - Completed browser-local admin editing; production authentication and shared publishing remain future work.
 
 ## Completed
+- [x] Resume PDF Integration: HeroDeck view/download actions and terminal `cv`/`resume` commands link to `/scientific_computing_CV.pdf`; commands automatically open a new tab and log a direct link. PDF asset still needs to be supplied at `public/scientific_computing_CV.pdf`.
+- Resume integration validation (2026-10-18): TypeScript, ESLint, and production build passed. Browser interaction checks have not been run.
+- [x] Terminal Command Palette: global Cmd/Ctrl + K shortcut, floating trigger, animated accessible terminal dialog, help/about/projects/stats/contact/socials/clear commands, and portfolio store integration.
 - [x] Admin Dashboard (/admin): terminal-style passcode login, localStorage route gate and logout, profile/bio editor, project CRUD with delete confirmation, and metrics overrides. Browser-local edits persist and appear in HeroDeck and ProjectBento. Default passcode: `surya-admin`; optional build-time `NEXT_PUBLIC_ADMIN_PASSCODE` override. Client-side gate only, with no server authentication or shared CMS database.
 - [x] Completed `EducationDeck.tsx` with the numbered education header, IIT Kharagpur highlight card, degree/location/period/CGPA details, and responsive four-category coursework matrix; rendered directly below `Timeline`. Preserved the existing exported `EducationItem` and `educationData`, and made data model imports type-only.
 - [x] Completed `Timeline.tsx` with a vertical experience timeline, deck-card surfaces, role and organization headings, period badges, locations, highlights, and domain tags; rendered below `ProjectBento` on the root page.

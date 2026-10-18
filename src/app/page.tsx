@@ -2,6 +2,7 @@ import HeroDeck from "../components/HeroDeck";
 import ProjectBento from "../components/ProjectBento";
 import Timeline from "../components/Timeline";
 import EducationDeck from "../components/EducationDeck";
+import TerminalPalette from "../components/TerminalPalette";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
         <Timeline />
         <EducationDeck />
       </div>
+      <TerminalPalette />
     </main>
   );
 }
