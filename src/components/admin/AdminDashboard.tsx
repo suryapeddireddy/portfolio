@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { LogOut, Terminal } from "lucide-react";
 import { AUTH_KEY, projectCategories, savePortfolioContent, setAdminAuth, useAdminAuth, usePortfolioContent } from "../../lib/portfolio-store";
 import type { PortfolioContent } from "../../lib/portfolio-store";
+import { projects as fallbackProjects } from "@/data/portfolioData";
+import { projectFromRow, projectToRow, supabase } from "@/lib/supabase";
 import type { Metric, ProfileConfig, Project } from "../../types";
 
 const buttonClass = "rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 font-mono text-sm text-cyan-300 hover:bg-cyan-500/20 focus-visible:outline-2 focus-visible:outline-cyan-400";
@@ -42,13 +44,38 @@ function emptyProject(): Project {
   return { id: "", title: "", tagline: "", category: "Systems & C++", tags: [], summary: "", architectureDetails: { problem: "", solution: "", performanceGain: "" }, featured: false, date: String(new Date().getFullYear()) };
 }
 
-function ProjectEditor({ projects, onSave }: { projects: Project[]; onSave: (projects: Project[]) => boolean }) {
+function ProjectEditor() {
+  const [projects, setProjects] = useState<Project[]>(fallbackProjects);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    async function loadProjects() {
+      try {
+        if (!supabase) throw new Error("Supabase is not configured.");
+        const { data, error } = await supabase.from("projects").select("*");
+        if (error) throw error;
+        if (active && data) setProjects(data.map(projectFromRow));
+      } catch {
+        if (active) setError("Could not load database projects. Showing starter projects; check your connection before saving.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    void loadProjects();
+    return () => { active = false; };
+  }, []);
   const [draft, setDraft] = useState<Project>(emptyProject);
   const [tags, setTags] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   function reset() { setDraft(emptyProject()); setTags(""); }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy || loading) return;
+    setBusy(true); setError(""); setNotice("");
     const project: Project = {
       ...draft,
       id: draft.id || crypto.randomUUID(),
@@ -58,10 +85,42 @@ function ProjectEditor({ projects, onSave }: { projects: Project[]; onSave: (pro
       tags: [...new Set(tags.split(",").map((tag) => tag.trim()).filter(Boolean))],
       architectureDetails: { problem: draft.architectureDetails.problem.trim(), solution: draft.architectureDetails.solution.trim(), performanceGain: draft.architectureDetails.performanceGain?.trim() || undefined },
     };
-    if (onSave(draft.id ? projects.map((item) => item.id === draft.id ? project : item) : [...projects, project])) reset();
+    try {
+      if (!supabase) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to save projects.");
+      const { data, error } = await supabase.from("projects").upsert(projectToRow(project)).select("*").single();
+      if (error) throw error;
+      const saved = projectFromRow(data);
+      setProjects((current) => current.some((item) => item.id === saved.id)
+        ? current.map((item) => item.id === saved.id ? saved : item)
+        : [...current, saved]);
+      setNotice("Project saved to Supabase.");
+      reset();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Project could not be saved to Supabase.");
+    } finally { setBusy(false); }
+  }
+  async function deleteProject(id: string) {
+    if (busy || loading) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      if (!supabase) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to delete projects.");
+      const { data, error } = await supabase.from("projects").delete().eq("id", id).select("id");
+      if (error) throw error;
+      if (!data?.length) throw new Error("No project was deleted. Check that the row exists and you have permission to delete it.");
+      setProjects((current) => current.filter((item) => item.id !== id));
+      setDeleting(null);
+      if (draft.id === id) reset();
+      setNotice("Project deleted from Supabase.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Project could not be deleted from Supabase.");
+    } finally { setBusy(false); }
   }
   return (
     <div className="space-y-10">
+      {loading && <p role="status" className="text-slate-400">Loading projects...</p>}
+      {error && <p role="alert" className="text-red-300">{error}</p>}
+      {notice && <p role="status" className="text-emerald-300">{notice}</p>}
+      <fieldset disabled={busy || loading} className="space-y-10 disabled:opacity-60">
       <form onSubmit={submit} className="space-y-5">
         <h3 className="text-lg font-medium">{draft.id ? "Edit project" : "Add a new project"}</h3>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -71,6 +130,10 @@ function ProjectEditor({ projects, onSave }: { projects: Project[]; onSave: (pro
           <Field label="Tech tags (comma separated)"><input className={inputClass} value={tags} onChange={(event) => setTags(event.target.value)} /></Field>
           <Field label="Date / year"><input className={inputClass} required pattern=".*\S.*" value={draft.date} onChange={(event) => setDraft({ ...draft, date: event.target.value })} /></Field>
           <Field label="Performance gain (optional)"><input className={inputClass} value={draft.architectureDetails.performanceGain || ""} onChange={(event) => setDraft({ ...draft, architectureDetails: { ...draft.architectureDetails, performanceGain: event.target.value } })} /></Field>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="GitHub URL (optional)"><input className={inputClass} type="url" value={draft.githubUrl || ""} onChange={(event) => setDraft({ ...draft, githubUrl: event.target.value })} /></Field>
+          <Field label="Demo URL (optional)"><input className={inputClass} type="url" value={draft.demoUrl || ""} onChange={(event) => setDraft({ ...draft, demoUrl: event.target.value })} /></Field>
         </div>
         <Field label="Summary"><textarea className={inputClass} rows={2} required value={draft.summary} onChange={(event) => setDraft({ ...draft, summary: event.target.value })} /></Field>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -84,10 +147,11 @@ function ProjectEditor({ projects, onSave }: { projects: Project[]; onSave: (pro
         <table className="w-full text-left text-sm">
           <caption className="border-b border-slate-800 p-4 text-left font-mono text-xs text-slate-400">PROJECT REGISTRY / {projects.length} RECORDS</caption>
           <thead className="bg-slate-900/60 text-slate-400"><tr><th scope="col" className="p-4">Project</th><th scope="col" className="p-4">Category</th><th scope="col" className="p-4">Actions</th></tr></thead>
-          <tbody>{projects.map((project) => <tr key={project.id} className="border-t border-slate-800"><td className="min-w-48 p-4 font-medium">{project.title}</td><td className="p-4 text-slate-400">{project.category}</td><td className="p-4"><div className="flex flex-wrap gap-3"><button type="button" aria-label={`Edit ${project.title}`} className={buttonClass} onClick={() => { setDraft(project); setTags(project.tags.join(", ")); setDeleting(null); }}>Edit</button><button type="button" aria-label={`Delete ${project.title}`} className="rounded-lg px-3 py-2 text-red-400 hover:bg-red-400/10 focus-visible:outline-2 focus-visible:outline-red-400" onClick={() => setDeleting(project.id)}>Delete</button></div>{deleting === project.id && <div className="mt-3 space-y-3"><p className="text-red-300">Delete this project?</p><div className="flex gap-3"><button type="button" className={buttonClass} onClick={() => { if (onSave(projects.filter((item) => item.id !== project.id))) { setDeleting(null); if (draft.id === project.id) reset(); } }}>Confirm delete</button><button type="button" className={buttonClass} onClick={() => setDeleting(null)}>Cancel</button></div></div>}</td></tr>)}</tbody>
+          <tbody>{projects.map((project) => <tr key={project.id} className="border-t border-slate-800"><td className="min-w-48 p-4 font-medium">{project.title}</td><td className="p-4 text-slate-400">{project.category}</td><td className="p-4"><div className="flex flex-wrap gap-3"><button type="button" aria-label={`Edit ${project.title}`} className={buttonClass} onClick={() => { setDraft(project); setTags(project.tags.join(", ")); setDeleting(null); }}>Edit</button><button type="button" aria-label={`Delete ${project.title}`} className="rounded-lg px-3 py-2 text-red-400 hover:bg-red-400/10 focus-visible:outline-2 focus-visible:outline-red-400" onClick={() => setDeleting(project.id)}>Delete</button></div>{deleting === project.id && <div className="mt-3 space-y-3"><p className="text-red-300">Delete this project?</p><div className="flex gap-3"><button type="button" className={buttonClass} onClick={() => void deleteProject(project.id)}>Confirm delete</button><button type="button" className={buttonClass} onClick={() => setDeleting(null)}>Cancel</button></div></div>}</td></tr>)}</tbody>
         </table>
         {!projects.length && <p className="p-6 text-slate-400">No projects yet. Add your first project above.</p>}
       </div>
+      </fieldset>
     </div>
   );
 }
@@ -164,14 +228,14 @@ export default function AdminDashboard() {
           <div><p className="mb-3 flex items-center gap-2 font-mono text-xs text-emerald-400"><Terminal size={16} aria-hidden="true" />SESSION ACTIVE</p><h1 className="font-mono text-lg font-semibold tracking-tight sm:text-2xl">SURYA.SYS ADMIN CENTER</h1></div>
           <div className="flex items-center gap-4"><Link href="/" className="rounded-lg text-sm text-slate-400 hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-cyan-400">View portfolio ↗</Link><button type="button" onClick={logout} className={`${buttonClass} flex items-center gap-2`}><LogOut size={16} aria-hidden="true" />Logout</button></div>
         </header>
-        <p className="text-sm text-slate-400">Manage your command deck. Changes are stored locally in this browser.</p>
+        <p className="text-sm text-slate-400">Projects publish to Supabase. Profile and metric changes are stored in this browser.</p>
         <nav aria-label="Admin sections" className="flex flex-wrap gap-2">{tabs.map((item, index) => <button key={item} type="button" aria-pressed={tab === item} aria-controls="admin-panel" onClick={() => { setTab(item); setNotice(""); setError(""); }} className={`rounded-lg border px-4 py-3 font-mono text-xs focus-visible:outline-2 focus-visible:outline-cyan-400 sm:text-sm ${tab === item ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-300" : "border-slate-800 text-slate-400 hover:border-cyan-500/40 hover:text-slate-100"}`}><span className="mr-2 text-slate-500">0{index + 1}</span>[ {item} ]</button>)}</nav>
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300">{notice}</p>}
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{error}</p>}
         <section id="admin-panel" aria-labelledby="panel-title" className="deck-card rounded-2xl p-5 sm:p-8">
           <h2 id="panel-title" className="mb-7 text-2xl font-semibold">{tab}</h2>
           <div hidden={tab !== "Bio & Headline"}><ProfileEditor profile={content.profile} onSave={(profile) => save({ ...content, profile })} /></div>
-          <div hidden={tab !== "Projects CRUD"}><ProjectEditor projects={content.projects} onSave={(projects) => save({ ...content, projects })} /></div>
+          <div hidden={tab !== "Projects CRUD"}><ProjectEditor /></div>
           <div hidden={tab !== "Metrics Override"}><MetricsEditor metrics={content.metrics} onSave={(metrics) => save({ ...content, metrics })} /></div>
         </section>
       </div>

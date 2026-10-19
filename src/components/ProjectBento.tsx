@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { usePortfolioContent } from "../lib/portfolio-store";
+import { useEffect, useState } from "react";
+import { projects as fallbackProjects } from "@/data/portfolioData";
+import { isSupabaseConfigured, projectFromRow, supabase } from "@/lib/supabase";
 import type { Category, Project } from "../types";
 import ProjectDrawer from "./ProjectDrawer";
 
@@ -16,38 +17,121 @@ function Github({ size = 18 }: { size?: number }) {
 }
 
 export default function ProjectBento() {
-  const { projects } = usePortfolioContent();
+  const [projects, setProjects] = useState<Project[]>(fallbackProjects);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProjects() {
+      // Don't issue database calls if Supabase credentials aren't set in .env.local
+      if (!isSupabaseConfigured) return;
+
+      try {
+        const { data, error } = await supabase.from("projects").select("*").order("date", { ascending: false });
+        if (active) {
+          setProjects(!error && data && data.length > 0 ? data.map(projectFromRow) : fallbackProjects);
+        }
+      } catch {
+        if (active) setProjects(fallbackProjects);
+      }
+    }
+
+    void loadProjects();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const [category, setCategory] = useState<Category>("All");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
   const visibleProjects = projects.filter((project) => category === "All" || project.category === category);
 
   return (
     <section aria-labelledby="projects-title" className="py-12">
       <p className="font-mono text-xs tracking-widest text-cyan-400">PROJECT MATRIX</p>
-      <h2 id="projects-title" className="mt-3 text-3xl font-semibold sm:text-4xl">Engineered systems</h2>
+      <h2 id="projects-title" className="mt-3 text-3xl font-semibold sm:text-4xl">
+        Engineered systems
+      </h2>
+
       <div role="group" aria-label="Filter projects by category" className="my-8 flex flex-wrap gap-2">
-        {categories.map((item) => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)} className={`rounded-full border px-3 py-2 font-mono text-xs focus-visible:outline-2 focus-visible:outline-cyan-400 ${category === item ? "border-cyan-500/50 text-cyan-400 bg-cyan-950/20 shadow-[0_0_16px_-6px_rgba(6,182,212,0.5)]" : "border-slate-800 text-slate-400 hover:border-cyan-500/40 hover:text-slate-100"}`}>{item}</button>)}
+        {categories.map((item) => (
+          <button
+            key={item}
+            type="button"
+            aria-pressed={category === item}
+            onClick={() => setCategory(item)}
+            className={`rounded-full border px-3 py-2 font-mono text-xs focus-visible:outline-2 focus-visible:outline-cyan-400 ${
+              category === item
+                ? "border-cyan-500/50 bg-cyan-950/20 text-cyan-400 shadow-[0_0_16px_-6px_rgba(6,182,212,0.5)]"
+                : "border-slate-800 text-slate-400 hover:border-cyan-500/40 hover:text-slate-100"
+            }`}
+          >
+            {item}
+          </button>
+        ))}
       </div>
-      <p role="status" className="sr-only">{visibleProjects.length} projects in {category}</p>
+
+      <p role="status" className="sr-only">
+        {visibleProjects.length} projects in {category}
+      </p>
+
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {visibleProjects.map((project) => (
-          <article key={project.id} className={`deck-card flex flex-col rounded-2xl p-6 ${project.featured ? "lg:col-span-2" : ""}`}>
+          <article
+            key={project.id}
+            className={`deck-card flex flex-col rounded-2xl p-6 ${project.featured ? "lg:col-span-2" : ""}`}
+          >
             <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
               <span className="text-slate-400">{project.date}</span>
-              <span className="rounded-full border border-cyan-500/30 bg-cyan-950/20 px-2 py-1 text-cyan-400">{project.category}</span>
+              <span className="rounded-full border border-cyan-500/30 bg-cyan-950/20 px-2 py-1 text-cyan-400">
+                {project.category}
+              </span>
             </div>
+
             <h3 className="mt-4 text-xl font-semibold">{project.title}</h3>
             <p className="mt-3 leading-relaxed text-slate-400">{project.tagline}</p>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">{project.summary}</p>
-            <ul aria-label="Technologies" className="my-6 flex flex-wrap gap-2">{project.tags.map((tag) => <li key={tag} className="rounded-md border border-slate-800 px-2 py-1 font-mono text-xs text-slate-300">{tag}</li>)}</ul>
+
+            <ul aria-label="Technologies" className="my-6 flex flex-wrap gap-2">
+              {project.tags.map((tag) => (
+                <li key={tag} className="rounded-md border border-slate-800 px-2 py-1 font-mono text-xs text-slate-300">
+                  {tag}
+                </li>
+              ))}
+            </ul>
+
             <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
-              <button type="button" aria-haspopup="dialog" aria-label={`View System Spec: ${project.title}`} onClick={() => setSelectedProject(project)} className="rounded-lg border border-cyan-500/30 px-4 py-2 font-mono text-sm text-cyan-300 hover:bg-cyan-500/10 focus-visible:outline-2 focus-visible:outline-cyan-400">View System Spec ↗</button>
-              {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`GitHub repository for ${project.title} (opens in a new tab)`} className="rounded-lg border border-slate-800 p-3 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400 focus-visible:outline-2 focus-visible:outline-cyan-400"><Github size={18} aria-hidden="true" /></a>}
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={`View System Spec: ${project.title}`}
+                onClick={() => setSelectedProject(project)}
+                className="rounded-lg border border-cyan-500/30 px-4 py-2 font-mono text-sm text-cyan-300 hover:bg-cyan-500/10 focus-visible:outline-2 focus-visible:outline-cyan-400"
+              >
+                View System Spec ↗
+              </button>
+
+              {project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`GitHub repository for ${project.title} (opens in a new tab)`}
+                  className="rounded-lg border border-slate-800 p-3 text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400 focus-visible:outline-2 focus-visible:outline-cyan-400"
+                >
+                  <Github size={18} aria-hidden="true" />
+                </a>
+              )}
             </div>
           </article>
         ))}
       </div>
-      {visibleProjects.length === 0 && <p className="deck-card rounded-2xl p-8 text-slate-400">No projects published in this category yet.</p>}
+
+      {visibleProjects.length === 0 && (
+        <p className="deck-card rounded-2xl p-8 text-slate-400">No projects published in this category yet.</p>
+      )}
+
       <ProjectDrawer project={selectedProject} onClose={() => setSelectedProject(null)} />
     </section>
   );

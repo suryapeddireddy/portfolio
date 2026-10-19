@@ -1,12 +1,14 @@
 # Progress Tracker
 
 ## Current Phase
-- Phase 3: Browser-local Admin Dashboard
+- Phase 4: Supabase project publishing
 
 ## Active Goal
-- Completed browser-local admin editing; production authentication and shared publishing remain future work.
+- Supabase project fetching and CRUD implemented; live database verification awaits the required environment configuration. Profile and metrics remain browser-local; production authentication remains future work.
 
 ## Completed
+- [x] Supabase integration (2026-10-19): added typed `src/lib/supabase.ts`, shared row conversion for `performance_gain`, `github_url`, `demo_url`, and flat `problem`/`solution` columns. `ProjectBento` fetches on mount with static portfolio fallback on failure; a successful empty result remains empty. `/admin` keeps its thin page wrapper and performs database loading, upsert, and confirmed deletion in `AdminDashboard.tsx`, with pending controls, success/error feedback, and editable project URLs. Missing configuration preserves static rendering and reports admin errors.
+- Supabase verification: TypeScript, ESLint, and production build passed. Live read query could not run because the required public environment variables were not both available; no live mutations were attempted. Table columns and existing RLS permissions remain unverified. Expected table shape is documented by `ProjectRow` in `src/lib/supabase.ts`. Existing client passcode is only a UI gate; database write authorization must be enforced by Supabase RLS.
 - [x] Resume PDF Integration: HeroDeck view/download actions and terminal `cv`/`resume` commands link to `/scientific_computing_CV.pdf`; commands automatically open a new tab and log a direct link. PDF asset still needs to be supplied at `public/scientific_computing_CV.pdf`.
 - Resume integration validation (2026-10-18): TypeScript, ESLint, and production build passed. Browser interaction checks have not been run.
 - [x] Terminal Command Palette: global Cmd/Ctrl + K shortcut, floating trigger, animated accessible terminal dialog, help/about/projects/stats/contact/socials/clear commands, and portfolio store integration.
@@ -29,4 +31,5 @@
 - [x] Root page assembly (`src/app/page.tsx`)
 
 ## Next Up
-- Add server authentication and a shared data store if the CMS needs production publishing across devices.
+- Configure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`, verify the `projects` schema against `ProjectRow`, and validate database reads/upserts/deletes with the intended RLS policies.
+- Replace the browser-local admin gate with production authentication before enabling privileged database writes.
