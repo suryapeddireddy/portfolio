@@ -54,14 +54,14 @@ export default function ProjectBento() {
         Engineered systems
       </h2>
 
-      <div role="group" aria-label="Filter projects by category" className="my-8 flex flex-wrap gap-2">
+      <div role="group" aria-label="Filter projects by category" className="my-8 flex flex-nowrap gap-2 overflow-x-auto pb-2 no-scrollbar sm:flex-wrap sm:pb-0">
         {categories.map((item) => (
           <button
             key={item}
             type="button"
             aria-pressed={category === item}
             onClick={() => setCategory(item)}
-            className={`rounded-full border px-3 py-2 font-mono text-xs focus-visible:outline-2 focus-visible:outline-cyan-400 ${
+            className={`shrink-0 rounded-full border px-3 py-2 font-mono text-xs focus-visible:outline-2 focus-visible:outline-cyan-400 ${
               category === item
                 ? "border-cyan-500/50 bg-cyan-950/20 text-cyan-400 shadow-[0_0_16px_-6px_rgba(6,182,212,0.5)]"
                 : "border-slate-800 text-slate-400 hover:border-cyan-500/40 hover:text-slate-100"
@@ -80,7 +80,7 @@ export default function ProjectBento() {
         {visibleProjects.map((project) => (
           <article
             key={project.id}
-            className={`deck-card flex flex-col rounded-2xl p-6 ${project.featured ? "lg:col-span-2" : ""}`}
+            className={`deck-card flex flex-col rounded-2xl p-4 sm:p-6 ${project.featured ? "lg:col-span-2" : ""}`}
           >
             <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
               <span className="text-slate-400">{project.date}</span>

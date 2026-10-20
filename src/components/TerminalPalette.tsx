@@ -64,7 +64,7 @@ function TerminalWindow({ entries, onCommand, onClose }: {
         onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
       >
         <motion.section
-          className="flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-[#0B0F17] font-mono text-xs text-slate-200 shadow-2xl shadow-cyan-950/30"
+          className="mx-2 flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-[#0B0F17] font-mono text-xs text-slate-200 shadow-2xl shadow-cyan-950/30 sm:mx-auto"
           style={{ fontFamily: terminalFont.style.fontFamily }}
           initial={{ y: reducedMotion ? 0 : 16 }} animate={{ y: 0 }} exit={{ y: reducedMotion ? 0 : 16 }}
           transition={{ duration: reducedMotion ? 0 : 0.18 }}
@@ -162,7 +162,7 @@ export default function TerminalPalette() {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen((value) => !value)} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? "terminal-palette" : undefined} aria-keyshortcuts="Meta+K Control+K" className="fixed bottom-5 right-5 z-40 rounded-lg border border-cyan-500/40 bg-[#0B0F17]/95 px-4 py-3 font-mono text-xs text-cyan-300 shadow-lg hover:border-cyan-400 hover:bg-cyan-950 focus-visible:outline-2 focus-visible:outline-cyan-400">[ Terminal CLI (Cmd + K) ]</button>
+      <button type="button" onClick={() => setOpen((value) => !value)} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? "terminal-palette" : undefined} aria-keyshortcuts="Meta+K Control+K" className="fixed bottom-4 right-4 z-50 rounded-lg border border-cyan-500/40 bg-[#0B0F17]/95 p-3 font-mono text-xs text-cyan-300 shadow-lg hover:border-cyan-400 hover:bg-cyan-950 focus-visible:outline-2 focus-visible:outline-cyan-400">[ Terminal CLI (Cmd + K) ]</button>
       <AnimatePresence>{open && <TerminalWindow key="terminal" entries={entries} onCommand={runCommand} onClose={() => setOpen(false)} />}</AnimatePresence>
     </>
   );
