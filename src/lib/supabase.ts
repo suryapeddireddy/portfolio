@@ -63,7 +63,16 @@ const supabaseAnonKey =
 // Always returns a valid client instance so components can execute queries safely
 export const supabase = createClient<Database>(
   supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-key"
+  supabaseAnonKey || "placeholder-key",
+  {
+    auth: {
+      // Browser-only auth: the SDK consumes OAuth tokens on the /admin page.
+      flowType: "implicit",
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  }
 );
 
 // Helper to verify if environment keys are actually loaded

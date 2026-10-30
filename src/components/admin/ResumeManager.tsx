@@ -21,9 +21,10 @@ export default function ResumeManager() {
     if (signingIn || !isSupabaseConfigured) return;
     setSigningIn(true); setError(""); setNotice("");
     try {
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
-        options: { redirectTo: window.location.origin + "/admin" },
+        options: { redirectTo: `${origin}/admin` },
       });
       if (error) throw error;
     } catch (err) {
