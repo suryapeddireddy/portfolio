@@ -15,6 +15,21 @@ export default function ResumeManager() {
   const [confirming, setConfirming] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
+  const [signingIn, setSigningIn] = useState(false);
+
+  async function handleGitHubLogin() {
+    if (signingIn || !isSupabaseConfigured) return;
+    setSigningIn(true); setError(""); setNotice("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: { redirectTo: window.location.origin + "/admin" },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not sign in with GitHub.");
+    } finally { setSigningIn(false); }
+  }
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -66,15 +81,20 @@ export default function ResumeManager() {
     {!isSupabaseConfigured && <p role="alert" className="text-amber-300">Configure Supabase to manage your CV.</p>}
     {error && <p role="alert" className="text-red-300">{error}</p>}
     {notice && <p role="status" className="text-emerald-300">{notice}</p>}
-    {isSupabaseConfigured && !sessionLoading && !authenticated && <p role="status" className="text-amber-300">Sign in with GitHub to manage your resume.</p>}
+    {isSupabaseConfigured && sessionLoading && <p role="status" className="text-slate-400">Checking sign-in status…</p>}
+    {isSupabaseConfigured && !sessionLoading && !authenticated && <div className="space-y-3">
+      <p className="text-slate-400">Sign in with GitHub to manage your resume.</p>
+      <button type="button" disabled={signingIn} className={buttonClass} onClick={() => void handleGitHubLogin()}>{signingIn ? "Connecting to GitHub…" : "Sign in with GitHub"}</button>
+    </div>}
+    {authenticated && <p role="status" className="text-emerald-300">Supabase session active. Resume storage connected.</p>}
     {busy && <p role="status" className="text-slate-400">Working…</p>}
     {url ? <a href={url} target="_blank" rel="noopener noreferrer" className="text-cyan-300 underline">View current live resume ↗</a> : !busy && <p className="text-slate-400">No uploaded CV. The portfolio uses the static resume.</p>}
-    <fieldset disabled={busy || sessionLoading || !isSupabaseConfigured || !authenticated} className="space-y-4 disabled:opacity-60">
+    {authenticated && <fieldset disabled={busy || sessionLoading || !isSupabaseConfigured} className="space-y-4 disabled:opacity-60">
       <label className="block space-y-2 text-sm text-slate-300"><span>Select a resume PDF (maximum 6 MB)</span><input ref={input} type="file" accept=".pdf" className="block w-full rounded-lg border border-slate-700 p-3" onChange={(event) => { setFile(event.target.files?.[0] ?? null); setError(""); setNotice(""); }} /></label>
       <p className="text-sm text-slate-400">Uploading replaces the current CV.</p>
       <button type="button" disabled={!file} className={buttonClass} onClick={() => void mutate("upload")}>Upload Resume</button>
       {url && <button type="button" className={`${buttonClass} ml-3 text-red-300`} onClick={() => setConfirming(true)}>Delete</button>}
       {confirming && <div className="space-y-3 rounded-lg border border-red-500/30 p-4"><p>Delete the uploaded CV? The portfolio will use the static resume.</p><button type="button" className={buttonClass} onClick={() => void mutate("delete")}>Confirm delete</button><button type="button" className={`${buttonClass} ml-3`} onClick={() => setConfirming(false)}>Cancel</button></div>}
-    </fieldset>
+    </fieldset>}
   </div>;
 }
