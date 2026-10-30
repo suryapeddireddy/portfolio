@@ -1,8 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { metrics, profileConfig, projects } from "../data/portfolioData";
-import type { Metric, ProfileConfig, Project } from "../types";
+import { experiences, metrics, profileConfig, projects } from "../data/portfolioData";
+import type { ExperienceItem, Metric, ProfileConfig, Project } from "../types";
 
 export const AUTH_KEY = "surya_admin_auth";
 const DATA_KEY = "surya_portfolio_data_v1";
@@ -13,9 +13,10 @@ export interface PortfolioContent {
   profile: ProfileConfig;
   projects: Project[];
   metrics: Metric[];
+  experiences: ExperienceItem[];
 }
 
-const defaults: PortfolioContent = { profile: profileConfig, projects, metrics };
+const defaults: PortfolioContent = { profile: profileConfig, projects, metrics, experiences };
 let cachedRaw: string | null = null;
 let cachedContent = defaults;
 
@@ -44,6 +45,12 @@ function isContent(value: unknown): value is PortfolioContent {
       && Array.isArray(project.tags) && project.tags.every((tag) => typeof tag === "string")
       && !!project.architectureDetails && typeof project.architectureDetails.problem === "string"
       && typeof project.architectureDetails.solution === "string")
+    && (content.experiences === undefined || (Array.isArray(content.experiences) && content.experiences.every((item) => item
+      && (item.id === undefined || typeof item.id === "string")
+      && [item.role, item.organization, item.period, item.location].every((field) => typeof field === "string")
+      && ["Internship", "Full-Time", "Academic/Research"].includes(item.type)
+      && Array.isArray(item.highlights) && item.highlights.every((field) => typeof field === "string")
+      && Array.isArray(item.tags) && item.tags.every((field) => typeof field === "string"))))
     && Array.isArray(content.metrics) && content.metrics.every((metric) => metric
       && [metric.id, metric.label, metric.value, metric.subtext].every((item) => typeof item === "string")
       && ["cyan", "mint", "amber"].includes(metric.accent));
@@ -55,7 +62,7 @@ function snapshot() {
   cachedRaw = raw;
   try {
     const value: unknown = raw ? JSON.parse(raw) : null;
-    cachedContent = isContent(value) ? value : defaults;
+    cachedContent = isContent(value) ? { ...value, experiences: value.experiences ?? experiences } : defaults;
   } catch { cachedContent = defaults; }
   return cachedContent;
 }
@@ -67,6 +74,10 @@ export function usePortfolioContent() {
 export function savePortfolioContent(content: PortfolioContent) {
   localStorage.setItem(DATA_KEY, JSON.stringify(content));
   window.dispatchEvent(new Event(CHANGE_EVENT));
+}
+
+export function saveExperiences(experiences: ExperienceItem[]) {
+  savePortfolioContent({ ...snapshot(), experiences });
 }
 
 function authSnapshot() {

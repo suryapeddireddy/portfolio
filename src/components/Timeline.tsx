@@ -1,10 +1,10 @@
 "use client";
 
 import { Briefcase, Calendar, MapPin, CheckCircle2 } from "lucide-react";
-import { experiences } from "../data/portfolioData";
-import type { ExperienceItem } from "../types";
+import { useExperiences } from "@/lib/use-experiences";
 
 export default function Timeline() {
+  const { experiences } = useExperiences();
   return (
     <section aria-labelledby="timeline-title" className="py-12">
       <p className="font-mono text-xs tracking-widest text-cyan-400">EXPERIENCE LOG</p>
@@ -12,15 +12,15 @@ export default function Timeline() {
         Experience &amp; academic journey
       </h2>
       <ol aria-label="Experience, newest first" className="relative mt-8 space-y-6 border-l border-slate-800 ml-4 pl-8 sm:pl-10">
-        {experiences.map((experience: ExperienceItem) => (
-          <li key={experience.id} className="relative">
+        {experiences.map((experience, index) => (
+          <li key={experience.id ?? index} className="relative">
             <span className="absolute -left-12 top-6 flex size-8 items-center justify-center rounded-full border border-cyan-800/40 bg-[#0B0F17] text-cyan-400 sm:-left-14">
               <Briefcase size={16} aria-hidden="true" />
             </span>
-            <article aria-labelledby={`experience-${experience.id}`} className="deck-card rounded-2xl p-5 sm:p-6">
+            <article aria-labelledby={`experience-${experience.id ?? index}`} className="deck-card rounded-2xl p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 id={`experience-${experience.id}`} className="text-xl font-semibold">
+                  <h3 id={`experience-${experience.id ?? index}`} className="text-xl font-semibold">
                     {experience.role}
                   </h3>
                   <p className="mt-1 text-sm text-slate-300">{experience.organization}</p>
@@ -53,6 +53,7 @@ export default function Timeline() {
           </li>
         ))}
       </ol>
+      {!experiences.length && <p className="mt-8 text-slate-400">No experience entries yet.</p>}
     </section>
   );
 }

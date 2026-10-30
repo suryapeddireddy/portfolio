@@ -47,7 +47,7 @@ export interface ProfileConfig {
 }
 
 export interface ExperienceItem {
-  id: string;
+  id?: string;
   role: string;
   organization: string;
   location: string;
