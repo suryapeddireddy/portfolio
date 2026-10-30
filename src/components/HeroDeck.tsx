@@ -1,9 +1,11 @@
 "use client";
 
+import { useResumeUrl } from "@/lib/use-resume";
 import { Download, FileText } from "lucide-react";
 import { usePortfolioContent } from "../lib/portfolio-store";
 
 export default function HeroDeck() {
+  const resumeUrl = useResumeUrl();
   const { profile: profileConfig, metrics } = usePortfolioContent();
   return (
     <section aria-labelledby="hero-title" className="space-y-6 py-12">
@@ -16,7 +18,7 @@ export default function HeroDeck() {
       </div>
       <div className="flex flex-wrap gap-3">
         <a
-          href="/scientific_computing_CV.pdf"
+          href={resumeUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="View Resume (PDF) (opens in a new tab)"
@@ -26,7 +28,7 @@ export default function HeroDeck() {
           [ View Resume (PDF) ]
         </a>
         <a
-          href="/scientific_computing_CV.pdf"
+          href={resumeUrl.startsWith("https://") ? `${resumeUrl}&download=scientific_computing_CV.pdf` : resumeUrl}
           download="scientific_computing_CV.pdf"
           aria-label="Download CV (PDF)"
           className="deck-card inline-flex items-center gap-2 rounded-xl px-5 py-3 font-mono text-sm font-semibold text-emerald-300 hover:border-emerald-500/40 hover:text-emerald-100 hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"

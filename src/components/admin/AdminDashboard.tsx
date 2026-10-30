@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, Terminal } from "lucide-react";
 import ExperienceManager from "./ExperienceManager";
+import ResumeManager from "./ResumeManager";
 import { AUTH_KEY, projectCategories, savePortfolioContent, setAdminAuth, useAdminAuth, usePortfolioContent } from "../../lib/portfolio-store";
 import type { PortfolioContent } from "../../lib/portfolio-store";
 import { projects as fallbackProjects } from "@/data/portfolioData";
@@ -14,7 +15,7 @@ import type { Metric, ProfileConfig, Project } from "../../types";
 
 const buttonClass = "rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 font-mono text-sm text-cyan-300 hover:bg-cyan-500/20 focus-visible:outline-2 focus-visible:outline-cyan-400";
 const inputClass = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20";
-const tabs = ["Bio & Headline", "Projects CRUD", "Experience Manager", "Metrics Override"] as const;
+const tabs = ["Bio & Headline", "Projects CRUD", "Experience Manager", "Metrics Override", "Resume Manager"] as const;
 type Tab = typeof tabs[number];
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -215,8 +216,12 @@ export default function AdminDashboard() {
     } catch { setError("Changes could not be saved. Check that browser storage is enabled and has free space."); return false; }
   }
 
-  function logout() {
-    try { setAdminAuth(false); router.replace("/admin/login"); }
+  async function logout() {
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "local" });
+      if (error) throw error;
+      setAdminAuth(false); router.replace("/admin/login");
+    }
     catch { setError("Could not clear the session. Enable browser storage and try again."); }
   }
 
@@ -238,6 +243,7 @@ export default function AdminDashboard() {
           <div hidden={tab !== "Bio & Headline"}><ProfileEditor profile={content.profile} onSave={(profile) => save({ ...content, profile })} /></div>
           <div hidden={tab !== "Projects CRUD"}><ProjectEditor /></div>
           <div hidden={tab !== "Experience Manager"}><ExperienceManager /></div>
+          <div hidden={tab !== "Resume Manager"}><ResumeManager /></div>
           <div hidden={tab !== "Metrics Override"}><MetricsEditor metrics={content.metrics} onSave={(metrics) => save({ ...content, metrics })} /></div>
         </section>
       </div>

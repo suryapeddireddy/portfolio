@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { JetBrains_Mono } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { useResumeUrl } from "@/lib/use-resume";
 import { usePortfolioContent } from "../lib/portfolio-store";
 
 const terminalFont = JetBrains_Mono({ subsets: ["latin"], display: "swap" });
@@ -98,6 +99,7 @@ function TerminalWindow({ entries, onCommand, onClose }: {
 }
 
 export default function TerminalPalette() {
+  const resumeUrl = useResumeUrl();
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<CommandEntry[]>([]);
   const { profile: profileConfig, projects, metrics } = usePortfolioContent();
@@ -126,12 +128,12 @@ export default function TerminalPalette() {
         break;
       case "cv":
       case "resume":
-        window.open("/scientific_computing_CV.pdf", "_blank", "noopener,noreferrer");
+        window.open(resumeUrl, "_blank", "noopener,noreferrer");
         output = (
           <p>
             Academic resume (PDF): {" "}
-            <a href="/scientific_computing_CV.pdf" target="_blank" rel="noopener noreferrer" className="break-all text-cyan-300 underline underline-offset-4 hover:text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-400">
-              /scientific_computing_CV.pdf
+            <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="break-all text-cyan-300 underline underline-offset-4 hover:text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-400">
+              {resumeUrl}
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
           </p>

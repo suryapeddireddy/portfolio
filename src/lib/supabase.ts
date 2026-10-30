@@ -69,6 +69,48 @@ export const supabase = createClient<Database>(
 // Helper to verify if environment keys are actually loaded
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
+export const RESUME_FALLBACK_URL = "/scientific_computing_CV.pdf";
+export const RESUME_MAX_BYTES = 6 * 1024 * 1024;
+const RESUME_BUCKET = "resumes";
+const RESUME_PATH = "resume.pdf";
+
+function requireResumeStorage() {
+  if (!isSupabaseConfigured) throw new Error("Supabase is not configured.");
+  return supabase.storage.from(RESUME_BUCKET);
+}
+
+export async function getLatestResumeUrl(): Promise<string | null> {
+  if (!isSupabaseConfigured) return null;
+  const storage = requireResumeStorage();
+  const { data, error } = await storage.list("", { search: RESUME_PATH, limit: 100 });
+  if (error) throw new Error(`Could not load the resume: ${error.message}`);
+  const resume = data?.find((item) => item.name === RESUME_PATH);
+  if (!resume) return null;
+  const { data: url } = storage.getPublicUrl(RESUME_PATH);
+  return `${url.publicUrl}?v=${encodeURIComponent(resume.updated_at || resume.id || "current")}`;
+}
+
+export async function uploadResumeToSupabase(file: File): Promise<string> {
+  if (!/\.pdf$/i.test(file.name) || (file.type && file.type !== "application/pdf")) {
+    throw new Error("Select a PDF file.");
+  }
+  if (!file.size || file.size > RESUME_MAX_BYTES) throw new Error("Choose a nonempty PDF no larger than 6 MB.");
+  if (await file.slice(0, 5).text() !== "%PDF-") throw new Error("The selected file is not a valid PDF.");
+  const storage = requireResumeStorage();
+  const { error } = await storage.upload(RESUME_PATH, file, {
+    upsert: true, contentType: "application/pdf", cacheControl: "0",
+  });
+  if (error) throw new Error(`Upload failed: ${error.message}`);
+  const { data } = storage.getPublicUrl(RESUME_PATH);
+  return `${data.publicUrl}?v=${Date.now()}`;
+}
+
+export async function deleteResumeFromSupabase(): Promise<void> {
+  const { data, error } = await requireResumeStorage().remove([RESUME_PATH]);
+  if (error) throw new Error(`Delete failed: ${error.message}`);
+  if (!data?.length) throw new Error("No resume was deleted. Check storage permissions and refresh.");
+}
+
 // --- Project Mappers ---
 export function projectFromRow(row: ProjectRow): Project {
   return {
