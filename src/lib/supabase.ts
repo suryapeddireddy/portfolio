@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { normalizeExperience, formatExperiencePeriod } from "./experience-dates";
 import type { Project, ExperienceItem } from "@/types";
 
 export type ProjectRow = {
@@ -23,9 +24,13 @@ export type ExperienceRow = {
   organization: string;
   location: string;
   period: string;
-  type: string;
+  start_month: string;
+  start_year: number;
+  end_month: string | null;
+  end_year: number | null;
+  is_current: boolean;
   highlights: string[];
-  tags: string[];
+  domain_tags: string[];
 };
 
 type Database = {
@@ -105,16 +110,19 @@ export function projectToRow(project: Project): ProjectRow {
 
 // --- Experience Mappers ---
 export function experienceFromRow(row: ExperienceRow): ExperienceItem {
-  return {
+  return normalizeExperience({
     id: row.id,
     role: row.role,
     organization: row.organization,
     location: row.location,
     period: row.period,
-    type: row.type as ExperienceItem["type"],
+    startMonth: row.start_month, startYear: row.start_year,
+    endMonth: row.end_month ?? undefined, endYear: row.end_year ?? undefined,
+    isCurrent: row.is_current,
+    type: "Internship",
     highlights: Array.isArray(row.highlights) ? row.highlights : [],
-    tags: Array.isArray(row.tags) ? row.tags : [],
-  };
+    tags: Array.isArray(row.domain_tags) ? row.domain_tags : [],
+  });
 }
 
 export function experienceToRow(item: ExperienceItem): ExperienceRow {
@@ -123,9 +131,29 @@ export function experienceToRow(item: ExperienceItem): ExperienceRow {
     role: item.role,
     organization: item.organization,
     location: item.location,
-    period: item.period,
-    type: item.type,
+    period: formatExperiencePeriod(item),
+    start_month: item.startMonth, start_year: item.startYear,
+    end_month: item.isCurrent ? null : item.endMonth ?? null,
+    end_year: item.isCurrent ? null : item.endYear ?? null,
+    is_current: item.isCurrent,
     highlights: item.highlights ?? [],
-    tags: item.tags ?? [],
+    domain_tags: item.tags ?? [],
   };
+}
+export async function fetchExperiencesFromSupabase(): Promise<ExperienceItem[]> {
+  const { data, error } = await supabase.from("experiences").select("*");
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(experienceFromRow);
+}
+
+export async function upsertExperienceInSupabase(item: ExperienceItem): Promise<ExperienceItem> {
+  const { data, error } = await supabase.from("experiences").upsert(experienceToRow(item)).select().single();
+  if (error) throw new Error(error.message);
+  return { ...experienceFromRow(data), type: item.type };
+}
+
+export async function deleteExperienceFromSupabase(id: string): Promise<void> {
+  const { data, error } = await supabase.from("experiences").delete().eq("id", id).select("id");
+  if (error) throw new Error(error.message);
+  if (!data?.length) throw new Error("Experience was not deleted. Check database permissions or reload the list.");
 }

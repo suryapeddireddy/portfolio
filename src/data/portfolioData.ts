@@ -89,7 +89,7 @@ export const experiences: ExperienceItem[] = [
     role: "Web Development Intern",
     organization: "Unified Mentor Pvt Ltd",
     location: "Gurgaon, India",
-    period: "06/2024 – 07/2024",
+    startMonth: "Jun", startYear: 2024, endMonth: "Jul", endYear: 2024, isCurrent: false,
     type: "Internship",
     highlights: [
       "Worked on backend workflow components for structured user data handling, validation, and persistence.",
@@ -102,7 +102,7 @@ export const experiences: ExperienceItem[] = [
     role: "Field Engineering Intern",
     organization: "The Singareni Collieries Company Limited (SCCL)",
     location: "Telangana, India",
-    period: "05/2024 – 06/2024",
+    startMonth: "May", startYear: 2024, endMonth: "Jun", endYear: 2024, isCurrent: false,
     type: "Internship",
     highlights: [
       "Completed field engineering study at Ravindrakhani No. 6 Incline underground coal operations.",

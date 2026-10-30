@@ -1,5 +1,6 @@
 "use client";
 
+import { formatExperiencePeriod } from "@/lib/experience-dates";
 import { Briefcase, Calendar, MapPin, CheckCircle2 } from "lucide-react";
 import { useExperiences } from "@/lib/use-experiences";
 
@@ -27,7 +28,7 @@ export default function Timeline() {
                 </div>
                 <span className="inline-flex items-center gap-1.5 font-mono text-xs text-cyan-400 bg-cyan-950/30 px-2 py-0.5 rounded border border-cyan-800/40">
                   <Calendar size={12} aria-hidden="true" />
-                  {experience.period}
+                  {formatExperiencePeriod(experience)}
                 </span>
               </div>
               <p className="mt-3 flex items-center gap-1.5 text-slate-400 text-xs">

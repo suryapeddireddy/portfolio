@@ -1,5 +1,6 @@
 "use client";
 
+import { MONTHS, formatExperiencePeriod } from "@/lib/experience-dates";
 import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import type { ExperienceItem } from "@/types";
@@ -13,7 +14,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block space-y-2 text-sm text-slate-400"><span>{label}</span>{children}</label>;
 }
 function emptyExperience(): ExperienceItem {
-  return { role: "", organization: "", period: "", location: "", type: "Internship", highlights: [], tags: [] };
+  return { role: "", organization: "", startMonth: "Jan", startYear: new Date().getFullYear(), endMonth: "Jan", endYear: new Date().getFullYear(), isCurrent: false, location: "", type: "Internship", highlights: [], tags: [] };
 }
 
 export default function ExperienceManager() {
@@ -36,9 +37,12 @@ export default function ExperienceManager() {
     setBusy(true); setError(""); setNotice("");
     let published = false;
     try {
+      if (!MONTHS.includes(draft.startMonth as typeof MONTHS[number]) || !Number.isInteger(draft.startYear) || draft.startYear < 1 || draft.startYear > 9999) throw new Error("Enter a valid start month and year.");
+      if (!draft.isCurrent && (!MONTHS.includes(draft.endMonth as typeof MONTHS[number]) || !Number.isInteger(draft.endYear) || !draft.endYear || draft.endYear < 1 || draft.endYear > 9999)) throw new Error("Enter a valid end month and year.");
+      if (!draft.isCurrent && (draft.endYear! * 12 + MONTHS.indexOf(draft.endMonth as typeof MONTHS[number]) < draft.startYear * 12 + MONTHS.indexOf(draft.startMonth as typeof MONTHS[number]))) throw new Error("End date must be on or after the start date.");
       const item: ExperienceItem = {
         ...draft, id: draft.id || crypto.randomUUID(), role: draft.role.trim(), organization: draft.organization.trim(),
-        period: draft.period.trim(), location: draft.location.trim(),
+        period: undefined, endMonth: draft.isCurrent ? undefined : draft.endMonth, endYear: draft.isCurrent ? undefined : draft.endYear, location: draft.location.trim(),
         highlights: highlights.split("\n").map((line) => line.trim()).filter(Boolean),
         tags: [...new Set(tags.split(",").map((tag) => tag.trim()).filter(Boolean))],
       };
@@ -79,7 +83,11 @@ export default function ExperienceManager() {
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Role"><input className={inputClass} required pattern=".*\S.*" value={draft.role} onChange={(event) => setDraft({ ...draft, role: event.target.value })} /></Field>
           <Field label="Organization"><input className={inputClass} required pattern=".*\S.*" value={draft.organization} onChange={(event) => setDraft({ ...draft, organization: event.target.value })} /></Field>
-          <Field label="Period"><input className={inputClass} required pattern=".*\S.*" value={draft.period} onChange={(event) => setDraft({ ...draft, period: event.target.value })} /></Field>
+          <Field label="Start Month"><select className={inputClass} required value={draft.startMonth} onChange={(event) => setDraft({ ...draft, startMonth: event.target.value })}><option value="" disabled>Select month</option>{MONTHS.map((month) => <option key={month}>{month}</option>)}</select></Field>
+          <Field label="Start Year"><input className={inputClass} type="number" required min={1} max={9999} step={1} value={draft.startYear || ""} onChange={(event) => setDraft({ ...draft, startYear: event.target.valueAsNumber })} /></Field>
+          <label className="flex items-center gap-3 text-sm text-slate-300"><input type="checkbox" checked={draft.isCurrent} onChange={(event) => setDraft({ ...draft, isCurrent: event.target.checked })} />Is Current Role?</label>
+          <Field label="End Month"><select className={inputClass} disabled={draft.isCurrent} required={!draft.isCurrent} value={draft.endMonth ?? ""} onChange={(event) => setDraft({ ...draft, endMonth: event.target.value })}><option value="" disabled>Select month</option>{MONTHS.map((month) => <option key={month}>{month}</option>)}</select></Field>
+          <Field label="End Year"><input className={inputClass} type="number" disabled={draft.isCurrent} required={!draft.isCurrent} min={1} max={9999} step={1} value={draft.endYear || ""} onChange={(event) => setDraft({ ...draft, endYear: event.target.valueAsNumber })} /></Field>
           <Field label="Location"><input className={inputClass} required pattern=".*\S.*" value={draft.location} onChange={(event) => setDraft({ ...draft, location: event.target.value })} /></Field>
           <Field label="Domain Tags (comma separated)"><input className={inputClass} value={tags} onChange={(event) => setTags(event.target.value)} /></Field>
         </div>
@@ -88,7 +96,7 @@ export default function ExperienceManager() {
       </form>
       <ul aria-label="Existing experiences" className="space-y-4">
         {experiences.map((item, index) => <li key={item.id ?? index} className="rounded-xl border border-slate-800 bg-[#0B0F17] p-5">
-          <h3 className="font-semibold">{item.role}</h3><p className="mt-1 text-sm text-slate-400">{item.organization} · {item.period} · {item.location}</p>
+          <h3 className="font-semibold">{item.role}</h3><p className="mt-1 text-sm text-slate-400">{item.organization} · {formatExperiencePeriod(item)} · {item.location}</p>
           <div className="mt-4 flex gap-3"><button type="button" className={buttonClass} aria-label={`Edit ${item.role} at ${item.organization}`} onClick={() => edit(item, index)}>Edit</button><button type="button" className={buttonClass} aria-label={`Delete ${item.role} at ${item.organization}`} onClick={() => setDeleting(index)}>Delete</button></div>
           {deleting === index && <div className="mt-4 space-y-3"><p className="text-sm text-amber-300">Delete this experience?</p><div className="flex gap-3"><button type="button" className={buttonClass} onClick={() => void remove(index)}>Confirm delete</button><button type="button" className={buttonClass} onClick={() => setDeleting(null)}>Cancel</button></div></div>}
         </li>)}

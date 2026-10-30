@@ -51,7 +51,12 @@ export interface ExperienceItem {
   role: string;
   organization: string;
   location: string;
-  period: string;
+  period?: string;
+  startMonth: string;
+  startYear: number;
+  endMonth?: string;
+  endYear?: number;
+  isCurrent: boolean;
   type: 'Internship' | 'Full-Time' | 'Academic/Research';
   highlights: string[];
   tags: string[];

@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeExperience, compareExperiences, MONTHS } from "./experience-dates";
 import { useSyncExternalStore } from "react";
 import { experiences, metrics, profileConfig, projects } from "../data/portfolioData";
 import type { ExperienceItem, Metric, ProfileConfig, Project } from "../types";
@@ -47,7 +48,8 @@ function isContent(value: unknown): value is PortfolioContent {
       && typeof project.architectureDetails.solution === "string")
     && (content.experiences === undefined || (Array.isArray(content.experiences) && content.experiences.every((item) => item
       && (item.id === undefined || typeof item.id === "string")
-      && [item.role, item.organization, item.period, item.location].every((field) => typeof field === "string")
+      && [item.role, item.organization, item.location].every((field) => typeof field === "string")
+      && (typeof item.period === "string" || (MONTHS.includes(item.startMonth as typeof MONTHS[number]) && Number.isInteger(item.startYear) && typeof item.isCurrent === "boolean"))
       && ["Internship", "Full-Time", "Academic/Research"].includes(item.type)
       && Array.isArray(item.highlights) && item.highlights.every((field) => typeof field === "string")
       && Array.isArray(item.tags) && item.tags.every((field) => typeof field === "string"))))
@@ -62,7 +64,7 @@ function snapshot() {
   cachedRaw = raw;
   try {
     const value: unknown = raw ? JSON.parse(raw) : null;
-    cachedContent = isContent(value) ? { ...value, experiences: value.experiences ?? experiences } : defaults;
+    cachedContent = isContent(value) ? { ...value, experiences: (value.experiences ?? experiences).map(normalizeExperience).sort(compareExperiences) } : defaults;
   } catch { cachedContent = defaults; }
   return cachedContent;
 }
@@ -72,7 +74,7 @@ export function usePortfolioContent() {
 }
 
 export function savePortfolioContent(content: PortfolioContent) {
-  localStorage.setItem(DATA_KEY, JSON.stringify(content));
+  localStorage.setItem(DATA_KEY, JSON.stringify({ ...content, experiences: content.experiences.map(normalizeExperience).sort(compareExperiences) }));
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 

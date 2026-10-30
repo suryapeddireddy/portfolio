@@ -1,5 +1,6 @@
 "use client";
 
+import { compareExperiences } from "./experience-dates";
 import { useEffect, useState } from "react";
 import { saveExperiences, usePortfolioContent } from "./portfolio-store";
 import { fetchExperiencesFromSupabase, isSupabaseConfigured } from "./supabase";
@@ -20,5 +21,5 @@ export function useExperiences() {
     return () => { active = false; };
   }, []);
 
-  return { experiences, loading, error };
+  return { experiences: [...experiences].sort(compareExperiences), loading, error };
 }
