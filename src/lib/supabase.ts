@@ -79,6 +79,15 @@ function requireResumeStorage() {
   return supabase.storage.from(RESUME_BUCKET);
 }
 
+async function requireAuthenticatedResumeStorage() {
+  const storage = requireResumeStorage();
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw new Error(`Could not read your session: ${error.message}`);
+  if (!session) throw new Error("Sign in with GitHub to manage your resume.");
+  // The shared client sends the session token; Storage RLS authorizes the operation.
+  return storage;
+}
+
 export async function getLatestResumeUrl(): Promise<string | null> {
   if (!isSupabaseConfigured) return null;
   const storage = requireResumeStorage();
@@ -96,7 +105,7 @@ export async function uploadResumeToSupabase(file: File): Promise<string> {
   }
   if (!file.size || file.size > RESUME_MAX_BYTES) throw new Error("Choose a nonempty PDF no larger than 6 MB.");
   if (await file.slice(0, 5).text() !== "%PDF-") throw new Error("The selected file is not a valid PDF.");
-  const storage = requireResumeStorage();
+  const storage = await requireAuthenticatedResumeStorage();
   const { error } = await storage.upload(RESUME_PATH, file, {
     upsert: true, contentType: "application/pdf", cacheControl: "0",
   });
@@ -106,7 +115,8 @@ export async function uploadResumeToSupabase(file: File): Promise<string> {
 }
 
 export async function deleteResumeFromSupabase(): Promise<void> {
-  const { data, error } = await requireResumeStorage().remove([RESUME_PATH]);
+  const storage = await requireAuthenticatedResumeStorage();
+  const { data, error } = await storage.remove([RESUME_PATH]);
   if (error) throw new Error(`Delete failed: ${error.message}`);
   if (!data?.length) throw new Error("No resume was deleted. Check storage permissions and refresh.");
 }
